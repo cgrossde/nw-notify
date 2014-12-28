@@ -1,6 +1,9 @@
 # nw-notify (WIP)
 *Nice and simple notifications for node-webkit apps*
 
+![Mac demo](https://github.com/cgrossde/nw-notify/raw/gh-pages/nw-notify-mac-small.png)
+![Win demo](https://raw.githubusercontent.com/cgrossde/nw-notify/gh-pages/nw-notify-windows-small.png)
+
 *nw-notify* displays notifications in the lower right corner. Notifications are stacked (most recent on the top) and slide down, once they expire. *nw-notify* is a child of [Pullover](https://github.com/cgrossde/Pullover), a destop client for the Pushover service. I was not satisfied with node-webkits native notifications on windows (just a bubble dialog) and other notification modules like [node-notifier](https://github.com/mikaelbr/node-notifier), [node-webkit-desktop-notifications](https://github.com/edjafarov/node-webkit-desktop-notification) or [nw-desktop-notifications](https://github.com/robrighter/nw-desktop-notifications) did not work with node-webkit (node-notifier), had nasty bugs or just didn't look very nice. I made some design choices for *nw-notify* to prevent bugs the other implementations ran into:
 
 * No slide in of notifications from the right side (prevent bugs with multiple screens)
