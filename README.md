@@ -83,7 +83,7 @@ Returns the maximum amount of notifications that fit onto the users screen.
 
 ## License
 
-    Pullover - The unofficial Pushover desktop client
+    nw-notify - Nice and simple notifications for node-webkit apps
     Copyright (C) 2014  Christoph Groß <gross@blubyte.de> (http://chris-labs.de/)
     
     This program is free software: you can redistribute it and/or modify
