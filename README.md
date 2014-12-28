@@ -20,7 +20,7 @@
 
 ## Usage
 
-```
+```JavaScript
 var nwNotify = require('nw-notify');
 // Change config options
 nwNotify.setConfig({
