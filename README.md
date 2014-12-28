@@ -29,13 +29,13 @@ nwNotify.setConfig({
 });
 
 // Send notifications
-notify('Some title', 'Some text');
+nwNotify.notify('Some title', 'Some text');
 // With URL, click notification to open
-notify('Open URL', 'Click to goto Wikipedia', 'http://wikipedia.org');
+nwNotify.notify('Open URL', 'Click to goto Wikipedia', 'http://wikipedia.org');
 // Or some images within your app
-notify('Open URL', 'Click to goto Wikipedia', 'http://wikipedia.org', nwNotify.getAppPath() + 'pathTo/image/from/nwAppRoot/folder.png');
+nwNotify.notify('Open URL', 'Click to goto Wikipedia', 'http://wikipedia.org', nwNotify.getAppPath() + 'pathTo/image/from/nwAppRoot/folder.png');
 // Do something when user clicks on notification
-notify('Custom func','Action on click', null, null, function() {
+nwNotify.notify('Custom func','Action on click', null, null, function() {
     // Your code here
 });
 
@@ -48,7 +48,7 @@ nwNotify.setConfig({
     }
 });
 // Send notification that uses the new options
-notify('Notification', 'Using some other app icon');
+nwNotify.notify('Notification', 'Using some other app icon');
 
 // Before terminating you should close all windows openend by nw-notify
 nwNotify.closeAll();
