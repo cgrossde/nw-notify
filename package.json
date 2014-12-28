@@ -1,0 +1,16 @@
+{
+  "name": "nw-notify",
+  "version": "0.1.0",
+  "description": "Nice notifications for node webkit",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Christoph Groß <gross@blubyte.de> (http://chris-labs.de/)",
+  "license": "MIT",
+  "dependencies": {
+    "async": "^0.9.0",
+    "lodash": "^2.4.1",
+    "promise": "^6.0.1"
+  }
+}
