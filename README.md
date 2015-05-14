@@ -61,8 +61,22 @@ On startup *nw-notify* will determine the maximum amount of notifications that f
 
 ## Function reference
 
-### notify(title, text, url, image, onClickFunction)
+### notify(title, text, url, image, onClickFunction, onShowFunction, onCloseFunction)
 Display new notification
+
+Or supply an object to notify like this:
+
+~~~
+notify({
+    title: 'Title',
+    text: 'Some text',
+    url: 'http://google.de',
+    onClickFunc: function() { alert('onCLick') },
+    onShowFunc: function() { alert('onShow') },
+    onCloseFunc: function() { alert('onClose')}
+});
+~~~
+
 
 ### setConfig(configObj)
 Change some config options. Can be run multiple times, also between `notify()`-calls to chnage *nw-notify*s behaviour.
