@@ -232,9 +232,6 @@ function showNotification(notificationObj) {
 					}
 
 					if(notificationObj.onCloseFunc) {
-						if(event === undefined) {
-							var event = 'closeByAPI';
-						}
 						notificationObj.onCloseFunc({
 							event: event,
 							id: notificationObj.id
@@ -258,13 +255,22 @@ function showNotification(notificationObj) {
 
 					// Move notifications down
 					return moveOneDown(pos);
-				}
-				// Set timeout to hide notification
-				var closeTimeout = setTimeout(function() {
+				};
+
+				// Always add to animationQueue to prevent erros (e.g. notification
+				// got closed while it was moving will produce an error)
+				var closeNotificationSafely = function(reason) {
+					if(reason === undefined)
+						var reason = 'closedByAPI';
 					animationQueue.push({
 						func: closeNotification,
-						args: [ 'timeout' ]
+						args: [ reason ]
 					});
+				};
+
+				// Set timeout to hide notification
+				var closeTimeout = setTimeout(function() {
+					closeNotificationSafely('timeout');
 				}, config.displayTime);
 
 				// Close button
@@ -272,10 +278,7 @@ function showNotification(notificationObj) {
 				var closeButton = notiDoc.getElementById('close');
 				closeButton.addEventListener('click',function(event) {
 					event.stopPropagation();
-					animationQueue.push({
-						func: closeNotification,
-						args: [ 'close' ]
-					});
+					closeNotificationSafely('close');
 				});
 
 				// URL
@@ -289,7 +292,7 @@ function showNotification(notificationObj) {
 							notificationObj.onClickFunc({
 								event: 'click',
 								id: notificationObj.id,
-								closeNotification: closeNotification
+								closeNotification: closeNotificationSafely
 							});
 						}
 					});
@@ -306,7 +309,7 @@ function showNotification(notificationObj) {
 					notificationObj.onShowFunc({
 						event: 'show',
 						id: notificationObj.id,
-						closeNotification: closeNotification
+						closeNotification: closeNotificationSafely
 					});
 				}
 				resolve(notificationWindow);
