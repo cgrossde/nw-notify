@@ -6,24 +6,34 @@
     var nwNotify = require('../index');
     nwNotify.setTemplatePath('../notification.html');
     nwNotify.setConfig({
-    	displayTime: 6000
+    	displayTime: 10000
     });
 
-	setTimeout(function() {
-    	nwNotify.notify({
-			title: 'Notification 1',
-			text: 'Haha',
-			onClickFunc: function() { console.log('onCLick 1') },
-			onShowFunc: function() { console.log('onShow 1') },
-			onCloseFunc: function() { console.log('onClose 1')}
-		});
-    }, 2000);
+    var num = 0;
 
-    setTimeout(function() {
-    	nwNotify.notify('Some title', 'Some text', null, null, function() {
-    		alert('Clicked first');
-    	});
-    }, 4000);
+    function createNewNotification() {
+        (function (numPrivate) {
+            nwNotify.notify({
+                title: 'Notification ' + numPrivate,
+                text: 'Haha',
+                onClickFunc: handleClick,
+                onShowFunc: function(event) { console.log('onShow ' + numPrivate, event) },
+                onCloseFunc: function(event) { console.log('onClose ' + numPrivate, event) }
+            });
+        })(num);
+        num++;
+    }
+
+    function handleClick(event) {
+        console.log('User clicked notification ' + event.id + '. Closing it immediately.');
+        event.closeNotification();
+    }
+
+    var interval = setInterval(createNewNotification, 1500);
+
+	setTimeout(function() {
+    	clearInterval(interval);
+    }, 40000);
 
     </script>
   </head>

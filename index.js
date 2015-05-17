@@ -3,6 +3,7 @@ var path = require('path');
 var async = require('async');
 var Promise = require('promise');
 var gui = global.window.nwDispatcher.requireNwGui();
+var util = require('util');
 
 // One animation at a time
 var AnimationQueue = function(options) {
@@ -30,6 +31,11 @@ AnimationQueue.prototype.animate = function(object) {
 		} else {
 			self.running = false;
 		}
+	})
+	.catch(function(err) {
+		console.log('nw-notify encountered an error!');
+		console.log('Please submit the error stack and code samples to: https://github.com/cgrossde/nw-notify/issues');
+		console.log(err.stack);
 	});
 };
 
@@ -175,8 +181,10 @@ var notificationQueue = [];
 // To prevent executing mutliple animations at once
 var animationQueue = new AnimationQueue();
 
+// Give each notification a unique id
+var latestID = 0;
 
-function notify(title, text, url, iconPath, onClickFunc, onShowFunc, onCloseFunc) {
+function notify(title, text, url, image, onClickFunc, onShowFunc, onCloseFunc) {
 	// Is title an object?
 	if(title !== null && typeof title === 'object') {
 		// Use object instead of supplied parameters
@@ -187,16 +195,19 @@ function notify(title, text, url, iconPath, onClickFunc, onShowFunc, onCloseFunc
 			title: title,
 			text: text,
 			url: url,
-			iconPath: iconPath,
+			image: image,
 			onClickFunc: onClickFunc,
 			onShowFunc: onShowFunc,
 			onCloseFunc: onCloseFunc
 		};
 	}
+	args.id = latestID;
+	latestID++;
 	animationQueue.push({
 		func: showNotification,
 		args: [ args ]
 	});
+	return args.id;
 }
 
 function showNotification(notificationObj) {
@@ -213,9 +224,22 @@ function showNotification(notificationObj) {
 				activeNotifications.push(notificationWindow);
 
 				// Close notification function
-				var closeNotification = function() {
+				var closeNotification = function closeNotification(event) {
+					if(notificationObj.closed) {
+						//console.log('Already closed');
+						return new Promise(function(exitEarly) { exitEarly(); });
+					} else {
+						notificationObj.closed = true;
+					}
+
 					if(notificationObj.onCloseFunc) {
-						notificationObj.onCloseFunc();
+						if(event === undefined) {
+							var event = 'closeByAPI';
+						}
+						notificationObj.onCloseFunc({
+							event: event,
+							id: notificationObj.id
+						});
 					}
 
 					// Remove event listener
@@ -239,17 +263,19 @@ function showNotification(notificationObj) {
 				// Set timeout to hide notification
 				var closeTimeout = setTimeout(function() {
 					animationQueue.push({
-						'func': closeNotification
+						func: closeNotification,
+						args: [ 'timeout' ]
 					});
 				}, config.displayTime);
 
 				// Close button
 				var notiDoc = notificationWindow.window.document;
 				var closeButton = notiDoc.getElementById('close');
-				closeButton.addEventListener('click', function(event) {
+				closeButton.addEventListener('click',function(event) {
 					event.stopPropagation();
 					animationQueue.push({
-						'func': closeNotification
+						func: closeNotification,
+						args: [ 'close' ]
 					});
 				});
 
@@ -261,7 +287,11 @@ function showNotification(notificationObj) {
 							gui.Shell.openExternal(notificationObj.url);
 						}
 						if(notificationObj.onClickFunc) {
-							notificationObj.onClickFunc();
+							notificationObj.onClickFunc({
+								event: 'click',
+								id: notificationObj.id,
+								closeNotification: closeNotification
+							});
 						}
 					});
 				}
@@ -269,12 +299,17 @@ function showNotification(notificationObj) {
 				// Set contents, ...
 				setNotficationContents(notiDoc, notificationObj);
 
-				// Trigger onShowFunc if existent
-				if(notificationObj.onShowFunc) {
-					notificationObj.onShowFunc();
-				}
 				// Show window
 				notificationWindow.show();
+
+				// Trigger onShowFunc if existent
+				if(notificationObj.onShowFunc) {
+					notificationObj.onShowFunc({
+						event: 'show',
+						id: notificationObj.id,
+						closeNotification: closeNotification
+					});
+				}
 				resolve(notificationWindow);
 			});
 		}
@@ -295,8 +330,8 @@ function setNotficationContents(notiDoc, notificationObj) {
 	titleDoc.innerHTML = notificationObj.text;
 	// Image
 	var imageDoc = notiDoc.getElementById('image');
-	if(notificationObj.iconPath) {
-		imageDoc.src = notificationObj.iconPath;
+	if(notificationObj.image) {
+		imageDoc.src = notificationObj.image;
 	} else {
 		setStyleOnDomElement({ display: 'none'}, imageDoc);
 	}
@@ -437,14 +472,10 @@ function getWindow() {
 }
 
 function setStyleOnDomElement(styleObj, domElement){
-    // var root = document.documentElement //reference root element of document
-    for (var styleAttr in styleObj){ //loop through possible properties
-        // if (styleAttr in root.style){ //if property exists on element (
-        	domElement.style[styleAttr] = styleObj[styleAttr];
-        // } else {
-        // 	console.log(styleObj[i] + ' not supported');
-        // }
-    }
+  // var root = document.documentElement //reference root element of document
+  for (var styleAttr in styleObj){ //loop through possible properties
+     domElement.style[styleAttr] = styleObj[styleAttr];
+  }
 }
 
 function closeAll() {
