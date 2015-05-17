@@ -3,7 +3,6 @@ var path = require('path');
 var async = require('async');
 var Promise = require('promise');
 var gui = global.window.nwDispatcher.requireNwGui();
-var util = require('util');
 
 // One animation at a time
 var AnimationQueue = function(options) {
