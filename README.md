@@ -74,7 +74,7 @@ On startup *nw-notify* will determine the maximum amount of notifications that f
 
 Calling `notify()` will return an unique id for this particular notification. Each callback (`onClickFunc`, `onShowFunc`, `onCloseFunc`) will return an event object which contains the notification id, the event name(click, show, close, timout, closeByAPI) and a function to close the notification:
 
-```
+```JavaScript
 {
     event: 'click',
     id: 32,
@@ -83,7 +83,7 @@ Calling `notify()` will return an unique id for this particular notification. Ea
 ```
 
 **Example**
-```
+```JavaScript
 function handleClick(event) {
     console.log('User clicked notification ' + event.id + '. Closing it immediately.');
     event.closeNotification();
