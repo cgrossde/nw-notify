@@ -17,6 +17,7 @@
 * AppIcons (optional, left of notification text) and images (optional, right of notification text)
 * Close button (top right corner)
 * Open URLs (optional)
+* Callbacks for `show`, `click`, `close` (by user), `timeout` (close after displayTime) and `closeByAPI`
 
 ## Usage
 
@@ -28,15 +29,16 @@ nwNotify.setConfig({
     displayTime: 6000
 });
 
-// Send notifications
+// Send simple notification
 nwNotify.notify('Some title', 'Some text');
-// With URL, click notification to open
+// Notification with URL, click notification to open
 nwNotify.notify('Open URL', 'Click to goto Wikipedia', 'http://wikipedia.org');
 // Or some images within your app
 nwNotify.notify('Open URL', 'Click to goto Wikipedia', 'http://wikipedia.org', nwNotify.getAppPath() + 'pathTo/image/from/nwAppRoot/folder.png');
 // Do something when user clicks on notification
 nwNotify.notify('Custom func','Action on click', null, null, function() {
     // Your code here
+    console.log('User clicked notification')
 });
 
 // Change config options again
@@ -50,6 +52,15 @@ nwNotify.setConfig({
 // Send notification that uses the new options
 nwNotify.notify('Notification', 'Using some other app icon');
 
+// Supply object instead of parameters to notify function
+var id = nwNotify.notify({
+    title: 'Notification title',
+    text: 'Some text',
+    onClickFunc: function(event) { console.log('onCLick', event) },
+    onShowFunc: function(event) { console.log('onShow', event) },
+    onCloseFunc: function(event) { console.log('onClose', event) }
+});
+
 // Before terminating you should close all windows openend by nw-notify
 nwNotify.closeAll();
 ```
@@ -59,10 +70,57 @@ nwNotify.closeAll();
 On startup *nw-notify* will determine the maximum amount of notifications that fit on the screen. This value will be stored in `config.maxVisibleNotifications` but cannot be greater than 7. This is to ensure that all animations go smoothly and *nw-notify* does not freeze your computer. However you can overwrite this value with `setConfig()`. If you do that you should use `calcMaxVisibleNotification()` to check if that many notifications fit onto the users screen.
 **Queueing:** Once the limit of `config.maxVisibleNotifications` is reached, *nw-notify* will queue all new notifications internally. The order of `notifiy()`-calls will be preserved and once old notifications fade out, the queued notifications are shown.
 
+## Callbacks
+
+Calling `notify()` will return an unique id for this particular notification. Each callback (`onClickFunc`, `onShowFunc`, `onCloseFunc`) will return an event object which contains the notification id, the event name(click, show, close, timout, closeByAPI) and a function to close the notification:
+
+```
+{
+    event: 'click',
+    id: 32,
+    closeNotification: function() {}
+}
+```
+
+**Example**
+```
+function handleClick(event) {
+    console.log('User clicked notification ' + event.id + '. Closing it immediately.');
+    event.closeNotification();
+}
+
+function handleClose(event) {
+    console.log('Notification was closed because: ' + event.name);
+}
+
+nwNotify.notify({
+    title: 'Notification title',
+    text: 'Some text',
+    onClickFunc: handleClick,
+    onCloseFunc: handleClose
+});
+```
+
+
 ## Function reference
 
-### notify(title, text, url, image, onClickFunction)
+### notify(title, text, url, image, onClickFunction, onShowFunction, onCloseFunction)
 Display new notification
+
+Or supply an object to `notify()` like this:
+
+~~~
+notify({
+    title: 'Title',
+    text: 'Some text',
+    image: 'path/to/image.png',
+    url: 'http://google.de',
+    onClickFunc: function() { alert('onCLick') },
+    onShowFunc: function() { alert('onShow') },
+    onCloseFunc: function() { alert('onClose')}
+});
+~~~
+
 
 ### setConfig(configObj)
 Change some config options. Can be run multiple times, also between `notify()`-calls to chnage *nw-notify*s behaviour.

@@ -18,7 +18,7 @@ AnimationQueue.prototype.push = function(object) {
 		this.running = true;
 		this.animate(object);
 	}
-}
+};
 
 AnimationQueue.prototype.animate = function(object) {
 	var self = this;
@@ -30,8 +30,13 @@ AnimationQueue.prototype.animate = function(object) {
 		} else {
 			self.running = false;
 		}
+	})
+	.catch(function(err) {
+		console.log('nw-notify encountered an error!');
+		console.log('Please submit the error stack and code samples to: https://github.com/cgrossde/nw-notify/issues');
+		console.log(err.stack);
 	});
-}
+};
 
 var config = {
 	width: 300,
@@ -60,7 +65,6 @@ var config = {
 		height: 40,
 		width: 40,
 		marginRight: 10,
-		// marginTop: -2
 	},
 	defaultStyleImage: {
 		overflow: 'hidden',
@@ -68,7 +72,6 @@ var config = {
 		height: 40,
 		width: 40,
 		marginLeft: 10,
-		// marginTop: -2
 	},
 	defaultStyleClose: {
 		position: 'absolute',
@@ -81,6 +84,15 @@ var config = {
 		margin: 0,
 		overflow: 'hidden',
 		cursor: 'default'
+	},
+	defaultWindow: {
+		'always-on-top': true,
+		'visible-on-all-workspaces': true,
+		'show_in_taskbar': process.platform == "darwin",
+		show: false,
+		frame: false,
+		transparent: true,
+		toolbar: false
 	}
 };
 
@@ -168,24 +180,38 @@ var notificationQueue = [];
 // To prevent executing mutliple animations at once
 var animationQueue = new AnimationQueue();
 
+// Give each notification a unique id
+var latestID = 0;
 
-function notify(title, text, url, iconPath, onClickFunc) {
-	animationQueue.push({
-		func: showNotification,
-		args: [ {
+function notify(title, text, url, image, onClickFunc, onShowFunc, onCloseFunc) {
+	// Is title an object?
+	if(title !== null && typeof title === 'object') {
+		// Use object instead of supplied parameters
+		var args = title;
+	} else {
+		// Use supplied parameters
+		var args = {
 			title: title,
 			text: text,
 			url: url,
-			iconPath: iconPath,
-			onClickFunc: onClickFunc
-		} ]
+			image: image,
+			onClickFunc: onClickFunc,
+			onShowFunc: onShowFunc,
+			onCloseFunc: onCloseFunc
+		};
+	}
+	args.id = latestID;
+	latestID++;
+	animationQueue.push({
+		func: showNotification,
+		args: [ args ]
 	});
+	return args.id;
 }
 
 function showNotification(notificationObj) {
 	return new Promise(function(resolve, reject) {
 		// Can we show it?
-		console.log((activeNotifications.length < config.maxVisibleNotifications), activeNotifications.length, config.maxVisibleNotifications);
 		if(activeNotifications.length < config.maxVisibleNotifications) {
 			// Get inactiveWindow or create new:
 			getWindow().then(function(notificationWindow) {
@@ -197,16 +223,27 @@ function showNotification(notificationObj) {
 				activeNotifications.push(notificationWindow);
 
 				// Close notification function
-				var closeNotification = function() {
+				var closeNotification = function closeNotification(event) {
+					if(notificationObj.closed) {
+						//console.log('Already closed');
+						return new Promise(function(exitEarly) { exitEarly(); });
+					} else {
+						notificationObj.closed = true;
+					}
+
+					if(notificationObj.onCloseFunc) {
+						notificationObj.onCloseFunc({
+							event: event,
+							id: notificationObj.id
+						});
+					}
+
 					// Remove event listener
 					var newContainer = container.cloneNode(true);
 					container.parentNode.replaceChild(newContainer, container);
 					clearTimeout(closeTimeout);
-					// Remove URL clickHandler
-					if(notificationObj.url) {
-						var newCloseButton = closeButton.cloneNode(true);
+					var newCloseButton = closeButton.cloneNode(true);
 					closeButton.parentNode.replaceChild(newCloseButton, closeButton);
-					}
 					// Recycle window
 					var pos = activeNotifications.indexOf(notificationWindow);
 					activeNotifications.splice(pos, 1);
@@ -218,29 +255,46 @@ function showNotification(notificationObj) {
 
 					// Move notifications down
 					return moveOneDown(pos);
-				}
+				};
+
+				// Always add to animationQueue to prevent erros (e.g. notification
+				// got closed while it was moving will produce an error)
+				var closeNotificationSafely = function(reason) {
+					if(reason === undefined)
+						var reason = 'closedByAPI';
+					animationQueue.push({
+						func: closeNotification,
+						args: [ reason ]
+					});
+				};
+
 				// Set timeout to hide notification
 				var closeTimeout = setTimeout(function() {
-					animationQueue.push({
-						'func': closeNotification
-					});
+					closeNotificationSafely('timeout');
 				}, config.displayTime);
 
 				// Close button
 				var notiDoc = notificationWindow.window.document;
 				var closeButton = notiDoc.getElementById('close');
-				closeButton.addEventListener('click', function(event) {
+				closeButton.addEventListener('click',function(event) {
 					event.stopPropagation();
-					animationQueue.push({
-						'func': closeNotification
-					});
+					closeNotificationSafely('close');
 				});
 
 				// URL
 				var container = notiDoc.getElementById('container');
-				if(notificationObj.url) {
+				if(notificationObj.url || notificationObj.onClickFunc) {
 					container.addEventListener('click', function() {
-						gui.Shell.openExternal(notificationObj.url);
+						if(notificationObj.url) {
+							gui.Shell.openExternal(notificationObj.url);
+						}
+						if(notificationObj.onClickFunc) {
+							notificationObj.onClickFunc({
+								event: 'click',
+								id: notificationObj.id,
+								closeNotification: closeNotificationSafely
+							});
+						}
 					});
 				}
 
@@ -249,6 +303,15 @@ function showNotification(notificationObj) {
 
 				// Show window
 				notificationWindow.show();
+
+				// Trigger onShowFunc if existent
+				if(notificationObj.onShowFunc) {
+					notificationObj.onShowFunc({
+						event: 'show',
+						id: notificationObj.id,
+						closeNotification: closeNotificationSafely
+					});
+				}
 				resolve(notificationWindow);
 			});
 		}
@@ -269,8 +332,8 @@ function setNotficationContents(notiDoc, notificationObj) {
 	titleDoc.innerHTML = notificationObj.text;
 	// Image
 	var imageDoc = notiDoc.getElementById('image');
-	if(notificationObj.iconPath !== undefined) {
-		imageDoc.src = notificationObj.iconPath;
+	if(notificationObj.image) {
+		imageDoc.src = notificationObj.image;
 	} else {
 		setStyleOnDomElement({ display: 'none'}, imageDoc);
 	}
@@ -366,17 +429,10 @@ function getWindow() {
 		}
 		// Or create a new window
 		else {
-			notificationWindow = gui.Window.open(getTemplatePath(), {
-			  'always-on-top': true,
-			  'visible-on-all-workspaces': true,
-			  'show_in_taskbar': false,
-			  show: false,
-			  frame: false,
-			  width: config.width,
-			  height: config.height,
-			  transparent: true,
-			  toolbar: false
-			});
+			var windowProperties = config.defaultWindow;
+			windowProperties.width = config.width;
+			windowProperties.height = config.height;
+			notificationWindow = gui.Window.open(getTemplatePath(), config.defaultWindow);
 		}
 		// Return once DOM is loaded
 		notificationWindow.on('loaded', function() {
@@ -393,14 +449,13 @@ function getWindow() {
 			var style = {
 				height: config.height - 2*config.borderRadius - 2*config.defaultStyleContainer.padding,
 				width: config.width - 2*config.borderRadius  - 2*config.defaultStyleContainer.padding,
-				borderRadius: config.borderRadius
+				borderRadius: config.borderRadius + 'px'
 			};
 			setStyleOnDomElement(style, container);
 			// Style appIcon or hide
 			if(config.appIcon) {
 				setStyleOnDomElement(config.defaultStyleAppIcon, appIcon);
 				appIcon.src = config.appIcon;
-
 			} else {
 				setStyleOnDomElement({
 					display: 'none'
@@ -419,14 +474,10 @@ function getWindow() {
 }
 
 function setStyleOnDomElement(styleObj, domElement){
-    // var root = document.documentElement //reference root element of document
-    for (var styleAttr in styleObj){ //loop through possible properties
-        // if (styleAttr in root.style){ //if property exists on element (
-        	domElement.style[styleAttr] = styleObj[styleAttr];
-        // } else {
-        // 	console.log(styleObj[i] + ' not supported');
-        // }
-    }
+  // var root = document.documentElement //reference root element of document
+  for (var styleAttr in styleObj){ //loop through possible properties
+     domElement.style[styleAttr] = styleObj[styleAttr];
+  }
 }
 
 function closeAll() {

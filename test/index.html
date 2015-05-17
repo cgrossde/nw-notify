@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Hello World!</title>
+    <script type="text/javascript">
+    var nwNotify = require('../index');
+    nwNotify.setTemplatePath('../notification.html');
+    nwNotify.setConfig({
+    	displayTime: 10000
+    });
+
+    var num = 0;
+
+    function createNewNotification() {
+        (function (numPrivate) {
+            nwNotify.notify({
+                title: 'Notification ' + numPrivate,
+                text: 'Haha',
+                onClickFunc: handleClick,
+                onShowFunc: function(event) { console.log('onShow ' + numPrivate, event) },
+                onCloseFunc: function(event) { console.log('onClose ' + numPrivate, event) }
+            });
+        })(num);
+        num++;
+    }
+
+    function handleClick(event) {
+        console.log('User clicked notification ' + event.id + '. Closing it immediately.');
+        event.closeNotification();
+    }
+
+    var interval = setInterval(createNewNotification, 1500);
+
+	setTimeout(function() {
+    	clearInterval(interval);
+    }, 40000);
+
+    </script>
+  </head>
+  <body>
+    <h1>Hello World!</h1>
+    We are using node.js <script>document.write(process.version)</script>.
+  </body>
+</html>
