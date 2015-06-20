@@ -98,6 +98,7 @@ var config = {
 
 function setConfig(customConfig) {
 	config = _.defaults(customConfig, config);
+	calcDimensions();
 }
 
 // Little helper functions
@@ -135,9 +136,22 @@ function setTemplatePath(path) {
 	config.templatePath = path;
 }
 
-// Calc totalHeight & totalWidth
-config.totalHeight = config.height + config.padding;
-config.totalWidth = config.width + config.padding;
+var nextInsertPos = {};
+function calcDimensions() {
+	// Calc totalHeight & totalWidth
+	config.totalHeight = config.height + config.padding;
+	config.totalWidth = config.width + config.padding;
+
+	// Calc pos of first notification:
+	config.firstPos = {
+		x: config.lowerRightCorner.x - config.totalWidth,
+		y: config.lowerRightCorner.y - config.totalHeight
+	};
+
+	// Set nextInsertPos
+	nextInsertPos.x = config.firstPos.x;
+	nextInsertPos.y = config.firstPos.y;
+}
 
 // Init screen to gather some information
 gui.Screen.Init();
@@ -152,17 +166,7 @@ config.lowerRightCorner = {};
 config.lowerRightCorner.x = cur_screen.bounds.x + cur_screen.work_area.x + cur_screen.work_area.width;
 config.lowerRightCorner.y = cur_screen.bounds.y + cur_screen.work_area.y + cur_screen.work_area.height;
 
-// Calc pos of first notification:
-config.firstPos = {
-	x: config.lowerRightCorner.x - config.totalWidth,
-	y: config.lowerRightCorner.y - config.totalHeight
-}
-
-// Set nextInsertPos
-var nextInsertPos = {
-	x: config.firstPos.x,
-	y: config.firstPos.y
-}
+calcDimensions();
 
 // Maximum amount of Notifications we can show:
 config.maxVisibleNotifications = Math.floor(cur_screen.work_area.height / (config.totalHeight));
