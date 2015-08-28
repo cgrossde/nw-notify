@@ -89,6 +89,7 @@ var config = {
 		'always-on-top': true,
 		'visible-on-all-workspaces': true,
 		'show_in_taskbar': process.platform == "darwin",
+		resizable: false,
 		show: false,
 		frame: false,
 		transparent: true,
