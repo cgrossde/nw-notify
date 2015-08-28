@@ -160,6 +160,15 @@ var screens = gui.Screen.screens;
 // Use first screen only
 var cur_screen = screens[0];
 
+// detect primary screen if more than 1 screen
+if(screens.length > 0) {
+   for(var i=0; j=screens.length,i<j; i++){
+      if(screens[i].bounds.y == 0) {
+	cur_screen = screens[i];
+      }
+   }
+}
+
 // Display notifications starting from lower right corner
 // Calc lower right corner
 config.lowerRightCorner = {};
