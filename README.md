@@ -1,4 +1,4 @@
-# nw-notify (WIP)
+# nw-notify
 *Nice and simple notifications for node-webkit apps*
 
 ![Mac demo](https://github.com/cgrossde/nw-notify/raw/gh-pages/nw-notify-mac-small.png)
@@ -8,7 +8,7 @@
 
 * No slide in of notifications from the right side (prevent bugs with multiple screens)
 * Short animation with as few steps as possible to keep it running smoothly
-* Multi-Screen: Notifications are only shown on the first screen (this may change if someone makes a good pull-request)
+* Multi-Screen: Notifications are only shown on the first screen ~~(this may change if someone makes a good pull-request)~~ makkesk8 made a good PR and notifications are now shown on the primary screen (as of v0.2.2).
 
 
 ## Features
