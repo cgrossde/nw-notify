@@ -89,6 +89,7 @@ var config = {
 		'always-on-top': true,
 		'visible-on-all-workspaces': true,
 		'show_in_taskbar': process.platform == "darwin",
+		resizable: false,
 		show: false,
 		frame: false,
 		transparent: true,
@@ -159,6 +160,15 @@ var screens = gui.Screen.screens;
 
 // Use first screen only
 var cur_screen = screens[0];
+
+// detect primary screen if more than 1 screen
+if(screens.length > 0) {
+   for(var i=0; j=screens.length,i<j; i++){
+      if(screens[i].bounds.x == 0) {
+	cur_screen = screens[i];
+      }
+   }
+}
 
 // Display notifications starting from lower right corner
 // Calc lower right corner
