@@ -121,8 +121,8 @@ function getAppPath() {
 }
 
 function updateTemplatePath() {
-	var appPath = "file:///"+__dirname;
-	config.templatePath = appPath + '/notification.html';
+	var scriptPath = "file:///"+__dirname;
+	config.templatePath = scriptPath + '/notification.html';
 	return config.templatePath;
 }
 
