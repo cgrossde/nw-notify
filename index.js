@@ -121,8 +121,8 @@ function getAppPath() {
 }
 
 function updateTemplatePath() {
-	var appPath = getAppPath();
-	config.templatePath = appPath + 'node_modules/nw-notify/notification.html';
+	var scriptPath = "file:///"+__dirname;
+	config.templatePath = scriptPath + '/notification.html';
 	return config.templatePath;
 }
 
