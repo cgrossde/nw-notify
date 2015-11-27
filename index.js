@@ -38,6 +38,10 @@ AnimationQueue.prototype.animate = function(object) {
 	});
 };
 
+AnimationQueue.prototype.clear = function() {
+	this.queue = [];
+}
+
 var config = {
 	width: 300,
 	height: 65,
@@ -496,13 +500,17 @@ function setStyleOnDomElement(styleObj, domElement){
 
 function closeAll() {
 	// Clear out animation Queue and close windows
-	animationQueue = [];
+	animationQueue.clear();
 	_.forEach(activeNotifications, function(window) {
 		window.close();
 	});
 	_.forEach(inactiveWindows, function(window) {
 		window.close();
 	});
+	// Reset certain vars
+	nextInsertPos = {};
+	activeNotifications = [];
+	inactiveWindows = [];
 }
 
 module.exports.notify = notify;
