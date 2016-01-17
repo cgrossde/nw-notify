@@ -1,8 +1,8 @@
-var _ = require('lodash');
-var path = require('path');
-var async = require('async');
-var Promise = require('promise');
-var gui = global.window.nwDispatcher.requireNwGui();
+var _ 					= require('lodash'),
+		path 				= require('path'),
+		async 			= require('async'),
+		Promise 		= require('promise'),
+		gui 				= global.window.nwDispatcher.requireNwGui();
 
 // One animation at a time
 var AnimationQueue = function(options) {
@@ -13,7 +13,7 @@ var AnimationQueue = function(options) {
 
 AnimationQueue.prototype.push = function(object) {
 	if(this.running) {
-		this.queue.push(object)
+		this.queue.push(object);
 	} else {
 		this.running = true;
 		this.animate(object);
@@ -40,7 +40,7 @@ AnimationQueue.prototype.animate = function(object) {
 
 AnimationQueue.prototype.clear = function() {
 	this.queue = [];
-}
+};
 
 var config = {
 	width: 300,
@@ -53,6 +53,7 @@ var config = {
 	animateInParallel: false,
 	appIcon: null,
 	pathToModule: '',
+	autoCleanup: true,
 	defaultStyleContainer: {
 		backgroundColor: '#f0f0f0',
 		overflow: 'hidden',
@@ -168,7 +169,7 @@ var cur_screen = screens[0];
 // detect primary screen if more than 1 screen
 if(screens.length > 0) {
    for(var i=0; j=screens.length,i<j; i++){
-      if(screens[i].bounds.x == 0) {
+      if(screens[i].bounds.x === 0) {
 	cur_screen = screens[i];
       }
    }
@@ -202,13 +203,15 @@ var animationQueue = new AnimationQueue();
 var latestID = 0;
 
 function notify(title, text, url, image, onClickFunc, onShowFunc, onCloseFunc) {
+	var args;
+
 	// Is title an object?
 	if(title !== null && typeof title === 'object') {
 		// Use object instead of supplied parameters
-		var args = title;
+		args = title;
 	} else {
 		// Use supplied parameters
-		var args = {
+		args = {
 			title: title,
 			text: text,
 			url: url,
@@ -234,7 +237,7 @@ function showNotification(notificationObj) {
 			// Get inactiveWindow or create new:
 			getWindow().then(function(notificationWindow) {
 				// Move window to position
-				calcInsertPos()
+				calcInsertPos();
 				notificationWindow.moveTo(nextInsertPos.x, nextInsertPos.y);
 
 				// Add to activeNotifications
@@ -279,7 +282,7 @@ function showNotification(notificationObj) {
 				// got closed while it was moving will produce an error)
 				var closeNotificationSafely = function(reason) {
 					if(reason === undefined)
-						var reason = 'closedByAPI';
+						 	reason = 'closedByAPI';
 					animationQueue.push({
 						func: closeNotification,
 						args: [ reason ]
@@ -346,7 +349,7 @@ function setNotficationContents(notiDoc, notificationObj) {
 	var titleDoc = notiDoc.getElementById('title');
 	titleDoc.innerHTML = notificationObj.title;
 	// message
-	var titleDoc = notiDoc.getElementById('message');
+	titleDoc = notiDoc.getElementById('message');
 	titleDoc.innerHTML = notificationObj.text;
 	// Image
 	var imageDoc = notiDoc.getElementById('image');
@@ -369,7 +372,7 @@ function checkForQueuedNotifications() {
 		animationQueue.push({
 			func: showNotification,
 			args: [ notificationQueue.shift() ]
-		})
+		});
 	}
 }
 
@@ -420,7 +423,7 @@ function moveNotificationAnimation(i, done) {
 		// Move one step down
 		notification.moveTo(config.firstPos.x, startY + curStep * step);
 		curStep++;
-	}, config.animationStepMs)
+	}, config.animationStepMs);
 }
 
 /**
@@ -512,6 +515,14 @@ function closeAll() {
 	activeNotifications = [];
 	inactiveWindows = [];
 }
+
+// Auto cleanup
+gui.Window.get().on('close', function() {
+	if(config.autoCleanup) {
+	  closeAll();
+	  gui.App.quit();
+	}
+});
 
 module.exports.notify = notify;
 module.exports.setConfig = setConfig;
