@@ -53,7 +53,7 @@ var config = {
 	animateInParallel: false,
 	appIcon: null,
 	pathToModule: '',
-	autoCleanup: true,
+	autoCleanup: true, // Auto cleanup
 	defaultStyleContainer: {
 		backgroundColor: '#f0f0f0',
 		overflow: 'hidden',
@@ -202,7 +202,7 @@ var animationQueue = new AnimationQueue();
 // Give each notification a unique id
 var latestID = 0;
 
-function notify(title, text, url, image, onClickFunc, onShowFunc, onCloseFunc) {
+function notify(title, text, url, image, sound, onClickFunc, onShowFunc, onCloseFunc) {
 	var args;
 
 	// Is title an object?
@@ -216,6 +216,7 @@ function notify(title, text, url, image, onClickFunc, onShowFunc, onCloseFunc) {
 			text: text,
 			url: url,
 			image: image,
+			sound: sound,
 			onClickFunc: onClickFunc,
 			onShowFunc: onShowFunc,
 			onCloseFunc: onCloseFunc
@@ -345,6 +346,15 @@ function showNotification(notificationObj) {
 }
 
 function setNotficationContents(notiDoc, notificationObj) {
+
+	// sound
+	if(notificationObj.sound) {
+		var audio = notiDoc.createElement('audio');
+		audio.src = notificationObj.sound;
+		audio.play();
+		audio = undefined;
+	}
+
 	// Title
 	var titleDoc = notiDoc.getElementById('title');
 	titleDoc.innerHTML = notificationObj.title;
@@ -516,7 +526,9 @@ function closeAll() {
 	inactiveWindows = [];
 }
 
-// Auto cleanup
+/**
+ * Auto cleanup
+ */
 gui.Window.get().on('close', function() {
 	if(config.autoCleanup) {
 	  closeAll();
