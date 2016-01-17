@@ -1,6 +1,6 @@
 {
   "name": "nw-notify",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Nice notifications for node webkit",
   "main": "index.js",
   "scripts": {
