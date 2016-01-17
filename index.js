@@ -169,11 +169,12 @@ var cur_screen = screens[0];
 // detect primary screen if more than 1 screen
 if(screens.length > 0) {
    for(var i=0; j=screens.length,i<j; i++){
-      if(screens[i].bounds.x === 0) {
-	cur_screen = screens[i];
+      if(screens[i].bounds.x === 0 && screens[i].bounds.y === 0) {
+					cur_screen = screens[i];
       }
    }
 }
+
 
 // Display notifications starting from lower right corner
 // Calc lower right corner
@@ -359,8 +360,8 @@ function setNotficationContents(notiDoc, notificationObj) {
 	var titleDoc = notiDoc.getElementById('title');
 	titleDoc.innerHTML = notificationObj.title;
 	// message
-	titleDoc = notiDoc.getElementById('message');
-	titleDoc.innerHTML = notificationObj.text;
+	var messageDoc = notiDoc.getElementById('message');
+	messageDoc.innerHTML = notificationObj.text;
 	// Image
 	var imageDoc = notiDoc.getElementById('image');
 	if(notificationObj.image) {
