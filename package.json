@@ -1,6 +1,6 @@
 {
   "name": "nw-notify",
-  "version": "0.2.4",
+  "version": "3.0.0",
   "description": "Nice notifications for node webkit",
   "main": "index.js",
   "scripts": {
@@ -10,11 +10,15 @@
   "license": "MIT",
   "dependencies": {
     "async": "^0.9.0",
+    "eslint": "^1.10.3",
     "lodash": "^2.4.1",
     "promise": "^6.0.1"
   },
   "repository": {
-    "type" : "git",
-    "url" : "https://github.com/cgrossde/nw-notify"
+    "type": "git",
+    "url": "https://github.com/cgrossde/nw-notify"
+  },
+  "devDependencies": {
+    "babel-eslint": "^4.1.6"
   }
 }
