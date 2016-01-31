@@ -1,6 +1,8 @@
 # nw-notify
 *Nice and simple notifications for node-webkit apps*
 
+**Version 3.0.0 has breaking changes, see section "Changelog" below.**
+
 ![Mac demo](https://github.com/cgrossde/nw-notify/raw/gh-pages/nw-notify-mac-small.png)
 ![Win demo](https://raw.githubusercontent.com/cgrossde/nw-notify/gh-pages/nw-notify-windows-small.png)
 
@@ -30,40 +32,70 @@ nwNotify.setConfig({
 });
 
 // Send simple notification
-nwNotify.notify('Some title', 'Some text');
+nwNotify.notify({ title: 'Notification title', text: 'Some text' });
 // Notification with URL, click notification to open
-nwNotify.notify('Open URL', 'Click to goto Wikipedia', 'http://wikipedia.org');
-// Or some images within your app
-nwNotify.notify('Open URL', 'Click to goto Wikipedia', 'http://wikipedia.org', nwNotify.getAppPath() + 'pathTo/image/from/nwAppRoot/folder.png');
+nwNotify.notify({ title: 'Notification title', text: 'Some text', url: 'http://wikipedia.org'});
+// Or with image and playing a sound on show
+nwNotify.notify({ 
+    title: 'Notification title', 
+    text: 'Some text', url: 'http://wikipedia.org',
+    image: nwNotify.getAppPath() + 'pathTo/image/from/nwAppRoot/folder.png',
+    sound: nwNotify.getAppPath() + 'sound.wav'
+});
 // Do something when user clicks on notification
-nwNotify.notify('Custom func','Action on click', null, null, function() {
+nwNotify.notify({ title: 'Custom func', onClickFunc: function() {
     // Your code here
     console.log('User clicked notification')
-});
+}});
 
-// Change config options again
+// Change config options between notify calls
 nwNotify.setConfig({
     appIcon: nwNotify.getAppPath() + 'images/otherIcon.png',
     defaultStyleText: {
-        color: '#FF000',
+        color: '#FF0000',
         fontWeight: 'bold'
     }
 });
 // Send notification that uses the new options
-nwNotify.notify('Notification', 'Using some other app icon');
+nwNotify.notify({ title: 'Notification title', text: 'This text is now bold and has the color red' });
 
-// Supply object instead of parameters to notify function
-var id = nwNotify.notify({
-    title: 'Notification title',
-    text: 'Some text',
-    onClickFunc: function(event) { console.log('onCLick', event) },
-    onShowFunc: function(event) { console.log('onShow', event) },
-    onCloseFunc: function(event) { console.log('onClose', event) }
-});
-
-// Before terminating you should close all windows openend by nw-notify
-nwNotify.closeAll();
+// See below for more options
 ```
+
+## Function reference
+
+### notify(notificationObj)
+Display new notification. For possible properties see example below:
+
+~~~
+notify({
+    title: 'Title',
+    text: 'Some text',
+    image: 'path/to/image.png',
+    url: 'http://google.de',
+    sound: nwNotify.getAppPath() + 'notification.wav',
+    onClickFunc: function() { alert('onCLick') },
+    onShowFunc: function() { alert('onShow') },
+    onCloseFunc: function() { alert('onClose')}
+});
+~~~
+
+For more info on the `onClickFunc`, `onShowFunc` and `onCloseFunc` callbacks see below.
+
+### setConfig(configObj)
+Change some config options. Can be run multiple times, also between `notify()`-calls to change *nw-notify*s behaviour.
+
+### getAppPath() : string
+Returns path to root of your node webkit app. Use it to provide paths to app icon or image files that are shipped with your app.
+
+### closeAll()
+Clears the animation queue and closes all windows opened by *nw-notify*. Call this to clean up before quiting your app. Not needed with `config.autoCleanup` enabled (default).
+
+### setTemplatePath(path)
+If you want to use your own `notification.html` you use this method. Use it like this: `nwNotify.setTemplatePath(nwNotify.getAppPath() + 'path/to/notification.html');`
+
+### calcMaxVisibleNotification() : int
+Returns the maximum amount of notifications that fit onto the users screen.
 
 ## Max notifications and queueing
 
@@ -72,12 +104,12 @@ On startup *nw-notify* will determine the maximum amount of notifications that f
 
 ## Callbacks
 
-Calling `notify()` will return an unique id for this particular notification. Each callback (`onClickFunc`, `onShowFunc`, `onCloseFunc`) will return an event object which contains the notification id, the event name(click, show, close, timout, closeByAPI) and a function to close the notification:
+Calling `notify()` will return an unique id for this particular notification. Each callback (`onClickFunc`, `onShowFunc`, `onCloseFunc`) will return an event object which contains the notification id, the event name(click, show, close, timeout, closeByAPI) and a function to close the notification:
 
 ```JavaScript
 {
-    event: 'click',
     id: 32,
+    name: 'click',
     closeNotification: function() {}
 }
 ```
@@ -101,41 +133,29 @@ nwNotify.notify({
 });
 ```
 
+## Config options
+See [the wiki](https://github.com/cgrossde/nw-notify/wiki/Config-defaults).
 
-## Function reference
+## Changelog
 
-### notify(title, text, url, image, onClickFunction, onShowFunction, onCloseFunction)
-Display new notification
+### 3.0.0
 
-Or supply an object to `notify()` like this:
+**Breaking changes:**
 
-~~~
-notify({
-    title: 'Title',
-    text: 'Some text',
-    image: 'path/to/image.png',
-    url: 'http://google.de',
-    onClickFunc: function() { alert('onCLick') },
-    onShowFunc: function() { alert('onShow') },
-    onCloseFunc: function() { alert('onClose')}
-});
-~~~
+ * The use of `notify(title, text, ...)` has been removed. Please call `notify()` with an object: `notify({ title: 'some title', text: 'some text' })`.
+ * `config.animateInParallel` is now set to true (because of better performance)
+ * Autocleanup feature was added and enabled by default. Calling `closeAll()` is not needed anymore. It will be called automatically when the main window is closed.
 
+**New features:**
 
-### setConfig(configObj)
-Change some config options. Can be run multiple times, also between `notify()`-calls to chnage *nw-notify*s behaviour.
+ * Notification sounds: `nwNotify.notify({title: 'notification with sound', sound: nwNotify.getAppPath() + 'notification.wav'})`. (Thanks [@makkesk8](https://github.com/makkesk8))
+ * Autocleanup windows (no need to call `closeAll()` anymore) `config.autoCleanup`. (Thanks [@makkesk8](https://github.com/makkesk8))
 
-### getAppPath() : string
-Returns path to root of your node webkit app. Use it to provide paths to app icon or image files that are shipped with your app.
+**Changes:**
 
-### closeAll()
-Clears the animation queue and closes all windows opened by *nw-notify*. Call this to clean up before quiting your app.
-
-### setTemplatePath(path)
-If you want to use your own `notification.html` you use this method. Use it like this: `nwNotify.setTemplatePath(nwNotify.getAppPath() + 'path/to/notification.html');`
-
-### calcMaxVisibleNotification() : int
-Returns the maximum amount of notifications that fit onto the users screen.
+* Fixed bug where `getAppPath()` would not work when the window's URL contained anchors `#`
+* More robust way of accessing the default `notification.html` template. If it can not be found we create one in the working dir and use that. Useful with webpack because in those setups the `node_modules` folder is not present.
+* Catch errors of `setStyleOnDomElement()` and report them to the user
 
 
 
