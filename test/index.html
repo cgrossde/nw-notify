@@ -6,9 +6,8 @@
     var nwNotify = require('../index');
     nwNotify.setTemplatePath('../notification.html');
     nwNotify.setConfig({
-    	displayTime: 10000
+    	displayTime: 7000
     });
-
     var num = 0;
 
     function createNewNotification() {
@@ -16,7 +15,7 @@
             nwNotify.notify({
                 title: 'Notification ' + numPrivate,
                 text: 'Haha',
-                sound: './test/notification.wav',
+                sound: nwNotify.getAppPath() + 'notification.wav',
                 onClickFunc: handleClick,
                 onShowFunc: function(event) { console.log('onShow ' + numPrivate, event) },
                 onCloseFunc: function(event) { console.log('onClose ' + numPrivate, event) }
@@ -24,6 +23,8 @@
         })(num);
         num++;
     }
+
+    nwNotify.notify('Test', 'tuut');
 
     function handleClick(event) {
         console.log('User clicked notification ' + event.id + '. Closing it immediately.');
