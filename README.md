@@ -78,6 +78,7 @@ notify({
 ~~~
 
 For more info on the `onClickFunc`, `onShowFunc` and `onCloseFunc` callbacks see below.
+There are two **sound files** provided in the `sounds/` folder. They are free to use (even commercially) under the specified licenses at the end of this document.
 
 ### setConfig(configObj)
 Change some config options. Can be run multiple times, also between `notify()`-calls to change *nw-notify*s behaviour.

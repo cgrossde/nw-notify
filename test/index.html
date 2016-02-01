@@ -15,7 +15,8 @@
             nwNotify.notify({
                 title: 'Notification ' + numPrivate,
                 text: 'Haha',
-                sound: nwNotify.getAppPath() + 'notification.wav',
+                // Alternate sound_1.wav and sound_2.wav
+                sound: nwNotify.getAppPath() + '../sounds/sound_'+((num % 2) +1) +'.wav',
                 onClickFunc: handleClick,
                 onShowFunc: function(event) { console.log('onShow ' + numPrivate, event) },
                 onCloseFunc: function(event) { console.log('onClose ' + numPrivate, event) }
