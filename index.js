@@ -258,9 +258,9 @@ function notify(notification) {
     return notification.id
   }
   else {
-    // Since 3.0.0 all notification parameters need to be passed
+    // Since 1.0.0 all notification parameters need to be passed
     // as object.
-    log('nw-notify: ERROR since version 3.0.0 notify() only accepts a single object with notification parameters. The use of notify(title, text, ...) was deprecated and removed.')
+    log('nw-notify: ERROR since version 1.0.0 notify() only accepts a single object with notification parameters. The use of notify(title, text, ...) was deprecated and removed.')
   }
 }
 
@@ -402,10 +402,10 @@ function setNotficationContents(notiDoc, notificationObj) {
 
   // Title
   var titleDoc = notiDoc.getElementById('title')
-  titleDoc.innerHTML = notificationObj.title
+  titleDoc.innerHTML = notificationObj.title || ''
   // message
   var messageDoc = notiDoc.getElementById('message')
-  messageDoc.innerHTML = notificationObj.text
+  messageDoc.innerHTML = notificationObj.text || ''
   // Image
   var imageDoc = notiDoc.getElementById('image')
   if (notificationObj.image) {
