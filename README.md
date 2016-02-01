@@ -1,23 +1,22 @@
 # nw-notify
 *Nice and simple notifications for node-webkit apps*
 
+**Version 1.0.0 has breaking changes, see section "Changelog" below.**
+
 ![Mac demo](https://github.com/cgrossde/nw-notify/raw/gh-pages/nw-notify-mac-small.png)
 ![Win demo](https://raw.githubusercontent.com/cgrossde/nw-notify/gh-pages/nw-notify-windows-small.png)
 
-*nw-notify* displays notifications in the lower right corner. Notifications are stacked (most recent on the top) and slide down, once they expire. *nw-notify* is a child of [Pullover](https://github.com/cgrossde/Pullover), a destop client for the Pushover service. I was not satisfied with node-webkits native notifications on windows (just a bubble dialog) and other notification modules like [node-notifier](https://github.com/mikaelbr/node-notifier), [node-webkit-desktop-notifications](https://github.com/edjafarov/node-webkit-desktop-notification) or [nw-desktop-notifications](https://github.com/robrighter/nw-desktop-notifications) did not work with node-webkit (node-notifier), had nasty bugs or just didn't look very nice. I made some design choices for *nw-notify* to prevent bugs the other implementations ran into:
-
-* No slide in of notifications from the right side (prevent bugs with multiple screens)
-* Short animation with as few steps as possible to keep it running smoothly
-* Multi-Screen: Notifications are only shown on the first screen ~~(this may change if someone makes a good pull-request)~~ makkesk8 made a good PR and notifications are now shown on the primary screen (as of v0.2.2).
-
+*nw-notify* displays notifications in the lower right corner. Notifications are stacked (most recent on the top) and slide down, once they expire. *nw-notify* is a child of [Pullover](https://github.com/cgrossde/Pullover), a destop client for the Pushover service. 
 
 ## Features
 
 * Windows and Mac supported (Linux not tested, but should work)
 * AppIcons (optional, left of notification text) and images (optional, right of notification text)
+* Sounds
 * Close button (top right corner)
 * Open URLs (optional)
-* Callbacks for `show`, `click`, `close` (by user), `timeout` (close after displayTime) and `closeByAPI`
+* Callbacks for `show`, `click` and `close`
+* Queues notifications if not all can be shown at once
 
 ## Usage
 
@@ -30,40 +29,71 @@ nwNotify.setConfig({
 });
 
 // Send simple notification
-nwNotify.notify('Some title', 'Some text');
+nwNotify.notify({ title: 'Notification title', text: 'Some text' });
 // Notification with URL, click notification to open
-nwNotify.notify('Open URL', 'Click to goto Wikipedia', 'http://wikipedia.org');
-// Or some images within your app
-nwNotify.notify('Open URL', 'Click to goto Wikipedia', 'http://wikipedia.org', nwNotify.getAppPath() + 'pathTo/image/from/nwAppRoot/folder.png');
+nwNotify.notify({ title: 'Notification title', text: 'Some text', url: 'http://wikipedia.org'});
+// Or with image and playing a sound on show
+nwNotify.notify({ 
+    title: 'Notification title', 
+    text: 'Some text', url: 'http://wikipedia.org',
+    image: nwNotify.getAppPath() + 'pathTo/image/from/nwAppRoot/folder.png',
+    sound: nwNotify.getAppPath() + 'sound.wav'
+});
 // Do something when user clicks on notification
-nwNotify.notify('Custom func','Action on click', null, null, function() {
+nwNotify.notify({ title: 'Custom func', onClickFunc: function() {
     // Your code here
     console.log('User clicked notification')
-});
+}});
 
-// Change config options again
+// Change config options between notify calls
 nwNotify.setConfig({
     appIcon: nwNotify.getAppPath() + 'images/otherIcon.png',
     defaultStyleText: {
-        color: '#FF000',
+        color: '#FF0000',
         fontWeight: 'bold'
     }
 });
 // Send notification that uses the new options
-nwNotify.notify('Notification', 'Using some other app icon');
+nwNotify.notify({ title: 'Notification title', text: 'This text is now bold and has the color red' });
 
-// Supply object instead of parameters to notify function
-var id = nwNotify.notify({
-    title: 'Notification title',
-    text: 'Some text',
-    onClickFunc: function(event) { console.log('onCLick', event) },
-    onShowFunc: function(event) { console.log('onShow', event) },
-    onCloseFunc: function(event) { console.log('onClose', event) }
-});
-
-// Before terminating you should close all windows openend by nw-notify
-nwNotify.closeAll();
+// See below for more options
 ```
+
+## Function reference
+
+### notify(notificationObj)
+Display new notification. For possible properties see example below:
+
+~~~
+notify({
+    title: 'Title',
+    text: 'Some text',
+    image: 'path/to/image.png',
+    url: 'http://google.de',
+    sound: nwNotify.getAppPath() + 'notification.wav',
+    onClickFunc: function() { alert('onCLick') },
+    onShowFunc: function() { alert('onShow') },
+    onCloseFunc: function() { alert('onClose')}
+});
+~~~
+
+For more info on the `onClickFunc`, `onShowFunc` and `onCloseFunc` callbacks see below.
+There are two **sound files** provided in the `sounds/` folder. They are free to use (even commercially) under the specified licenses at the end of this document.
+
+### setConfig(configObj)
+Change some config options. Can be run multiple times, also between `notify()`-calls to change *nw-notify*s behaviour.
+
+### getAppPath() : string
+Returns path to root of your node webkit app. Use it to provide paths to app icon or image files that are shipped with your app.
+
+### closeAll()
+Clears the animation queue and closes all windows opened by *nw-notify*. Call this to clean up before quiting your app. Not needed with `config.autoCleanup` enabled (default).
+
+### setTemplatePath(path)
+If you want to use your own `notification.html` you use this method. Use it like this: `nwNotify.setTemplatePath(nwNotify.getAppPath() + 'path/to/notification.html');`
+
+### calcMaxVisibleNotification() : int
+Returns the maximum amount of notifications that fit onto the users screen.
 
 ## Max notifications and queueing
 
@@ -72,12 +102,12 @@ On startup *nw-notify* will determine the maximum amount of notifications that f
 
 ## Callbacks
 
-Calling `notify()` will return an unique id for this particular notification. Each callback (`onClickFunc`, `onShowFunc`, `onCloseFunc`) will return an event object which contains the notification id, the event name(click, show, close, timout, closeByAPI) and a function to close the notification:
+Calling `notify()` will return an unique id for this particular notification. Each callback (`onClickFunc`, `onShowFunc`, `onCloseFunc`) will return an event object which contains the notification id, the event name(click, show, close, timeout, closeByAPI) and a function to close the notification:
 
 ```JavaScript
 {
-    event: 'click',
     id: 32,
+    name: 'click',
     closeNotification: function() {}
 }
 ```
@@ -101,42 +131,46 @@ nwNotify.notify({
 });
 ```
 
+## Config options
+See [the wiki](https://github.com/cgrossde/nw-notify/wiki/Config-defaults).
 
-## Function reference
+## Changelog
 
-### notify(title, text, url, image, onClickFunction, onShowFunction, onCloseFunction)
-Display new notification
+### 1.0.0
 
-Or supply an object to `notify()` like this:
+**Breaking changes:**
 
-~~~
-notify({
-    title: 'Title',
-    text: 'Some text',
-    image: 'path/to/image.png',
-    url: 'http://google.de',
-    onClickFunc: function() { alert('onCLick') },
-    onShowFunc: function() { alert('onShow') },
-    onCloseFunc: function() { alert('onClose')}
-});
-~~~
+ * The use of `notify(title, text, ...)` has been removed. Please call `notify()` with an object: `notify({ title: 'some title', text: 'some text' })`.
+ * `config.animateInParallel` is now set to true (because of better performance)
+ * Autocleanup feature was added and enabled by default. Calling `closeAll()` is not needed anymore. It will be called automatically when the main window is closed.
 
+**New features:**
 
-### setConfig(configObj)
-Change some config options. Can be run multiple times, also between `notify()`-calls to chnage *nw-notify*s behaviour.
+ * Notification sounds: `nwNotify.notify({title: 'notification with sound', sound: nwNotify.getAppPath() + 'notification.wav'})`. (Thanks [@makkesk8](https://github.com/makkesk8))
+ * Autocleanup windows (no need to call `closeAll()` anymore) `config.autoCleanup`. (Thanks [@makkesk8](https://github.com/makkesk8))
 
-### getAppPath() : string
-Returns path to root of your node webkit app. Use it to provide paths to app icon or image files that are shipped with your app.
+**Changes:**
 
-### closeAll()
-Clears the animation queue and closes all windows opened by *nw-notify*. Call this to clean up before quiting your app.
+* Fixed bug where `getAppPath()` would not work when the window's URL contained anchors `#`
+* More robust way of accessing the default `notification.html` template. If it can not be found we create one in the working dir and use that. Useful with webpack because in those setups the `node_modules` folder is not present.
+* Catch errors of `setStyleOnDomElement()` and report them to the user
 
-### setTemplatePath(path)
-If you want to use your own `notification.html` you use this method. Use it like this: `nwNotify.setTemplatePath(nwNotify.getAppPath() + 'path/to/notification.html');`
+### Older versions
 
-### calcMaxVisibleNotification() : int
-Returns the maximum amount of notifications that fit onto the users screen.
+**0.2.3 - Fixes [#16](https://github.com/cgrossde/nw-notify/issues/16)**
 
+**0.2.2 - Primary screen detection**
+
+**0.2.0**
+
+ * Return events with callbacks (events contain name, id of notification and the `closeNotification` function to close the notification early or programatically)
+ * Now under MIT License
+ * Callbacks for *show*, *click* and *close*
+ * Pass options as object to `notify()`
+
+**0.1.1 - Readme update**
+
+**0.1.0 - Initial version**
 
 
 ## License
@@ -162,3 +196,6 @@ Returns the maximum amount of notifications that fit onto the users screen.
     LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
     THE SOFTWARE.
+
+* **sounds/sound_1:** [Taken from RCPTONES.com](http://rcptones.com/dev_tones/) Licensed under Creative Commons Attributen License (http://creativecommons.org/licenses/by/3.0/us/)
+* **sounds/sound_2:** [Taken from Freesound.org](https://www.freesound.org/people/GameAudio/sounds/220212/) Licensed under the Creative Commons 0 License (http://creativecommons.org/publicdomain/zero/1.0/)
