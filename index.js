@@ -388,12 +388,11 @@ function setNotficationContents(notiDoc, notificationObj) {
       // If it's a local file, check it's existence
       // Won't check remote files e.g. http://
       if (notificationObj.sound.match(/^file\:/) !== null
-        || notificationObj.sound.match(/\//) !== null) {
+        || notificationObj.sound.match(/^\//) !== null) {
         fs.statSync(notificationObj.sound.replace('file://', '')).isFile()
       }
       var audio = new window.Audio(notificationObj.sound)
       audio.play()
-      log(audio)
     }
     catch (e) {
       log('nw-notify: ERROR could not find sound file: ' + notificationObj.sound.replace('file://', ''), e, e.stack)
