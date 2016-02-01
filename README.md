@@ -1,25 +1,22 @@
 # nw-notify
 *Nice and simple notifications for node-webkit apps*
 
-**Version 3.0.0 has breaking changes, see section "Changelog" below.**
+**Version 1.0.0 has breaking changes, see section "Changelog" below.**
 
 ![Mac demo](https://github.com/cgrossde/nw-notify/raw/gh-pages/nw-notify-mac-small.png)
 ![Win demo](https://raw.githubusercontent.com/cgrossde/nw-notify/gh-pages/nw-notify-windows-small.png)
 
-*nw-notify* displays notifications in the lower right corner. Notifications are stacked (most recent on the top) and slide down, once they expire. *nw-notify* is a child of [Pullover](https://github.com/cgrossde/Pullover), a destop client for the Pushover service. I was not satisfied with node-webkits native notifications on windows (just a bubble dialog) and other notification modules like [node-notifier](https://github.com/mikaelbr/node-notifier), [node-webkit-desktop-notifications](https://github.com/edjafarov/node-webkit-desktop-notification) or [nw-desktop-notifications](https://github.com/robrighter/nw-desktop-notifications) did not work with node-webkit (node-notifier), had nasty bugs or just didn't look very nice. I made some design choices for *nw-notify* to prevent bugs the other implementations ran into:
-
-* No slide in of notifications from the right side (prevent bugs with multiple screens)
-* Short animation with as few steps as possible to keep it running smoothly
-* Multi-Screen: Notifications are only shown on the first screen ~~(this may change if someone makes a good pull-request)~~ makkesk8 made a good PR and notifications are now shown on the primary screen (as of v0.2.2).
-
+*nw-notify* displays notifications in the lower right corner. Notifications are stacked (most recent on the top) and slide down, once they expire. *nw-notify* is a child of [Pullover](https://github.com/cgrossde/Pullover), a destop client for the Pushover service. 
 
 ## Features
 
 * Windows and Mac supported (Linux not tested, but should work)
 * AppIcons (optional, left of notification text) and images (optional, right of notification text)
+* Sounds
 * Close button (top right corner)
 * Open URLs (optional)
-* Callbacks for `show`, `click`, `close` (by user), `timeout` (close after displayTime) and `closeByAPI`
+* Callbacks for `show`, `click` and `close`
+* Queues notifications if not all can be shown at once
 
 ## Usage
 
@@ -138,7 +135,7 @@ See [the wiki](https://github.com/cgrossde/nw-notify/wiki/Config-defaults).
 
 ## Changelog
 
-### 3.0.0
+### 1.0.0
 
 **Breaking changes:**
 
@@ -157,6 +154,22 @@ See [the wiki](https://github.com/cgrossde/nw-notify/wiki/Config-defaults).
 * More robust way of accessing the default `notification.html` template. If it can not be found we create one in the working dir and use that. Useful with webpack because in those setups the `node_modules` folder is not present.
 * Catch errors of `setStyleOnDomElement()` and report them to the user
 
+### Older versions
+
+**0.2.3 - Fixes [#16](https://github.com/cgrossde/nw-notify/issues/16)**
+
+**0.2.2 - Primary screen detection**
+
+**0.2.0**
+
+ * Return events with callbacks (events contain name, id of notification and the `closeNotification` function to close the notification early or programatically)
+ * Now under MIT License
+ * Callbacks for *show*, *click* and *close*
+ * Pass options as object to `notify()`
+
+**0.1.1 - Readme update**
+
+**0.1.0 - Initial version**
 
 
 ## License
@@ -182,3 +195,6 @@ See [the wiki](https://github.com/cgrossde/nw-notify/wiki/Config-defaults).
     LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
     THE SOFTWARE.
+
+* **sounds/sound_1:** [Taken from RCPTONES.com](http://rcptones.com/dev_tones/) Licensed under Creative Commons Attributen License (http://creativecommons.org/licenses/by/3.0/us/)
+* **sounds/sound_2:** [Taken from Freesound.org](https://www.freesound.org/people/GameAudio/sounds/220212/) Licensed under the Creative Commons 0 License (http://creativecommons.org/publicdomain/zero/1.0/)
