@@ -324,10 +324,14 @@ function showNotification(notificationObj) {
           })
         }
 
+
+        // Display time per notification basis.
+        var displayTime = (notificationObj.displayTime ? notificationObj.displayTime : config.displayTime);
+
         // Set timeout to hide notification
         var closeTimeout = setTimeout(function() {
           closeNotificationSafely('timeout')
-        }, config.displayTime)
+        }, displayTime)
 
         // Close button
         var notiDoc = notificationWindow.window.document
