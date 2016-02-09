@@ -15,6 +15,7 @@
             nwNotify.notify({
                 title: 'Notification ' + numPrivate,
                 text: 'Haha',
+                displayTime: 10000,
                 // Alternate sound_1.wav and sound_2.wav
                 sound: nwNotify.getAppPath() + '../sounds/sound_'+((num % 2) +1) +'.wav',
                 onClickFunc: handleClick,
