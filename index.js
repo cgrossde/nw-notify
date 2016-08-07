@@ -3,7 +3,7 @@ var _           = require('lodash'),
     path        = require('path'),
     async       = require('async'),
     Promise     = require('promise'),
-    gui         = global.window.nwDispatcher.requireNwGui()
+    gui         = window.require('nw.gui')
 
 // One animation at a time
 var AnimationQueue = function(options) {
