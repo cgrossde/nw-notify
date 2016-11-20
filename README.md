@@ -1,6 +1,8 @@
 # nw-notify
 *Nice and simple notifications for node-webkit apps*
 
+## DISCONTINUED - Contact me if you want to take over this repo
+
 **Version 1.0.0 has breaking changes, see section "Changelog" below.**
 
 ![Mac demo](https://github.com/cgrossde/nw-notify/raw/gh-pages/nw-notify-mac-small.png)
